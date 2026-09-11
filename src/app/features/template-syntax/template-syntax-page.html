@@ -1,0 +1,171 @@
+<app-demo-page
+  heading="Новый синтаксис шаблонов"
+  since="v20"
+  summary="Выражения в шаблонах Angular всегда были ограниченным подмножеством JavaScript.
+           В v20 подмножество заметно расширили: появились оператор возведения в степень,
+           оператор in, шаблонные литералы и void. А самозакрывающиеся теги и @let пришли чуть раньше."
+>
+  <app-demo-section
+    heading="Оператор ** — возведение в степень"
+    icon="functions"
+    description="Раньше для этого обязательно нужен был метод компонента, который вызывался на каждом
+                 проходе change detection."
+  >
+    <div class="demo-row">
+      <label style="display: flex; flex-direction: column">
+        Основание: {{ base() }}
+        <mat-slider min="2" max="12" step="1" discrete>
+          <input matSliderThumb [value]="base()" (valueChange)="setBase($event)" />
+        </mat-slider>
+      </label>
+
+      <label style="display: flex; flex-direction: column">
+        Показатель: {{ exponent() }}
+        <mat-slider min="0" max="16" step="1" discrete>
+          <input matSliderThumb [value]="exponent()" (valueChange)="setExponent($event)" />
+        </mat-slider>
+      </label>
+
+      <div class="demo-stat accent">
+        <span class="label">{{ base() }} ** {{ exponent() }}</span>
+        <span class="value">{{ base() ** exponent() }}</span>
+      </div>
+
+      <div class="demo-stat">
+        <span class="label">2 ** 3 ** 2</span>
+        <span class="value">{{ 2 ** 3 ** 2 }}</span>
+        <span class="label">правая ассоциативность</span>
+      </div>
+    </div>
+
+    <p hint>
+      Ассоциативность и приоритет совпадают с JavaScript, поэтому
+      <code class="demo-inline-code">2 ** 3 ** 2</code> — это 512, а не 64.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Оператор in"
+    icon="rule"
+    description="Проверка наличия свойства без вспомогательного метода в классе компонента."
+  >
+    <div class="demo-col">
+      @for (profile of profiles; track profile.name) {
+        <div class="demo-row">
+          <strong style="min-width: 90px">{{ profile.name }}</strong>
+
+          @if ('email' in profile) {
+            <span class="demo-inline-code">email: {{ profile.email }}</span>
+          }
+          @if ('phone' in profile) {
+            <span class="demo-inline-code">phone: {{ profile.phone }}</span>
+          }
+          @if (!('email' in profile)) {
+            <span>почта не указана</span>
+          }
+        </div>
+      }
+    </div>
+
+    <p hint>
+      Работает и с массивами (<code class="demo-inline-code">0 in items</code>),
+      и с объектами — ровно как одноимённый оператор JavaScript.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Шаблонные литералы"
+    icon="text_fields"
+    description="Строки собираются с интерполяцией прямо внутри выражения, без длинной конкатенации."
+  >
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Имя</mat-label>
+      <input matInput [value]="userName()" (input)="onName($event)" />
+    </mat-form-field>
+
+    <div class="demo-note">{{ `Привет, ${userName()}! Вы из города ${city()}.` }}</div>
+
+    <div class="demo-row">
+      <span
+        class="demo-inline-code"
+        [title]="`Подсказка для ${userName()}`"
+        [attr.data-user]="`user-${userName().toLowerCase()}`"
+      >
+        Наведите курсор — в title подставлено имя
+      </span>
+    </div>
+
+    <p hint>
+      Литералы можно использовать в любой привязке: <code class="demo-inline-code">[src]</code>,
+      <code class="demo-inline-code">[attr.*]</code>, <code class="demo-inline-code">[class]</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Оператор void"
+    icon="do_not_disturb_on"
+    description="Вычисляет выражение и возвращает undefined. Полезно, когда обработчик события
+                 что-то возвращает, а возвращаемое значение мешает."
+  >
+    <div class="demo-row">
+      <button matButton="filled" type="button" (click)="void registerClick()">
+        <mat-icon>ads_click</mat-icon>
+        Посчитать клик
+      </button>
+
+      <div class="demo-stat">
+        <span class="label">Кликов</span>
+        <span class="value">{{ clicks() }}</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="operatorsSnippet" lang="html" caption="Все новые операторы v20" />
+
+    <p hint>
+      Метод <code class="demo-inline-code">registerClick()</code> возвращает число;
+      <code class="demo-inline-code">void</code> гасит результат, чтобы он не попал
+      в возвращаемое значение обработчика.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Самозакрывающиеся теги"
+    icon="code"
+    description="Мелочь, которая убирает половину визуального шума из шаблонов."
+  >
+    <div class="demo-row">
+      <app-version-chip since="v17.1" />
+      <app-version-chip since="v18" />
+      <app-version-chip since="v19" />
+      <app-version-chip since="v20" />
+    </div>
+
+    <app-code-block [code]="selfClosingSnippet" lang="html" caption="Самозакрывающиеся теги" />
+
+    <p hint>
+      Все бейджи выше написаны как <code class="demo-inline-code">&lt;app-version-chip /&gt;</code>.
+      В шаблонах этого проекта закрывающих тегов у компонентов почти нет.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="@let ещё раз" icon="data_object">
+    <app-code-block [code]="letSnippet" lang="html" caption="@let" />
+    <span hint>
+      Полное демо <code class="demo-inline-code">&#64;let</code> вместе с &#64;if и &#64;for —
+      на странице «Встроенный control flow».
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Каждое выражение выше требовало метода в классе компонента."
+  >
+    <app-code-block [code]="beforeSnippet" lang="html" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/templates/expression-syntax</span>
+  </app-demo-section>
+</app-demo-page>

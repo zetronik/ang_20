@@ -1,0 +1,106 @@
+<app-demo-page
+  heading="RxJS-интероп: toSignal, toObservable, takeUntilDestroyed"
+  since="v20"
+  summary="RxJS никуда не делся — он перестал быть обязательным для хранения состояния.
+           Пакет @angular/core/rxjs-interop даёт мост в обе стороны и в Angular 20
+           окончательно выведен из developer preview."
+>
+  <app-demo-section
+    heading="toSignal(): поток как значение"
+    icon="south"
+    description="Секундомер и редкие события работают на interval(), но в шаблоне это просто сигналы —
+                 без async pipe и без подписок."
+  >
+    <div class="demo-grid">
+      <div class="demo-stat accent">
+        <span class="label">interval(1000) через toSignal</span>
+        <span class="value">{{ seconds() }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">takeUntilDestroyed + filter</span>
+        <span class="value">{{ rareEvents() }}</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="toSignalSnippet" caption="toSignal()" />
+
+    <p hint>
+      Ключевое отличие от <code class="demo-inline-code">async</code>: сигнал можно прочитать
+      в шаблоне сколько угодно раз, и это не создаст новых подписок.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="toObservable(): сигнал как поток"
+    icon="north"
+    description="Поиск по имени: сигнал ввода превращается в поток, проходит через debounce и switchMap,
+                 а результат снова становится сигналом."
+  >
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Поиск пользователя</mat-label>
+      <input matInput type="search" [value]="query()" (input)="onQuery($event)" placeholder="напр. Le" />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="demo-row">
+      <div class="demo-stat">
+        <span class="label">Найдено</span>
+        <span class="value">{{ resultCount() }}</span>
+      </div>
+    </div>
+
+    <div class="demo-col">
+      @for (user of results(); track user.id) {
+        <div class="demo-note">
+          <strong>{{ user.name }}</strong> — {{ user.email }} ({{ user.company.name }})
+        </div>
+      } @empty {
+        <p>Начните вводить имя — запрос уйдёт через 400 мс после остановки печати.</p>
+      }
+    </div>
+
+    <app-code-block [code]="toObservableSnippet" caption="toObservable() + switchMap" />
+
+    <p hint>
+      Практическое правило Angular 20: состояние держим в сигналах, а RxJS подключаем там,
+      где нужна координация во времени — debounce, retry, отмена запросов.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="outputFromObservable()"
+    icon="output"
+    description="Компонент-тикер объявляет свой выход прямо из потока. Родитель подписывается
+                 обычным синтаксисом события."
+  >
+    <app-ticker (tick)="onTick($event)" />
+
+    <div class="demo-log">
+      @for (event of tickerEvents(); track $index) {
+        <div>{{ event }}</div>
+      } @empty {
+        <div>Ждём первое событие…</div>
+      }
+    </div>
+
+    <app-code-block [code]="outputsSnippet" caption="outputFromObservable / outputToObservable" />
+
+    <p hint>
+      <code class="demo-inline-code">pendingUntilEvent()</code> особенно важен в zoneless-режиме:
+      без zone.js фреймворк иначе не узнает, что в фоне ещё идёт работа.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="async pipe в шаблоне, shareReplay против дублей и Subject для отписки."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/ecosystem/rxjs-interop</span>
+  </app-demo-section>
+</app-demo-page>

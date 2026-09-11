@@ -1,0 +1,116 @@
+<div class="overview">
+  <header class="hero">
+    <h1>Что изменилось между Angular 16 и Angular 20</h1>
+    <p>
+      Это приложение — рабочий справочник. Каждая страница слева содержит живое демо,
+      исходный код с комментариями и таблицу «было в&nbsp;16 → стало в&nbsp;20».
+      Приложение собрано на Angular&nbsp;20 в режиме <strong>zoneless</strong>,
+      данные берутся с <code>jsonplaceholder.typicode.com</code>.
+    </p>
+
+    <div class="hero-facts">
+      <div class="fact">
+        <mat-icon>bolt</mat-icon>
+        <div>
+          <strong>Сигналы</strong>
+          <span>из developer preview стали основой фреймворка</span>
+        </div>
+      </div>
+      <div class="fact">
+        <mat-icon>code</mat-icon>
+        <div>
+          <strong>Шаблоны</strong>
+          <span>&#64;if / &#64;for / &#64;defer / &#64;let вместо структурных директив</span>
+        </div>
+      </div>
+      <div class="fact">
+        <mat-icon>speed</mat-icon>
+        <div>
+          <strong>Zoneless</strong>
+          <span>zone.js больше не нужен</span>
+        </div>
+      </div>
+      <div class="fact">
+        <mat-icon>build</mat-icon>
+        <div>
+          <strong>Сборка</strong>
+          <span>esbuild + Vite, HMR, миграции одной командой</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="timeline">
+    <h2>Хронология релизов</h2>
+
+    <mat-accordion multi>
+      @for (release of releases; track release.version; let first = $first, idx = $index) {
+        <mat-expansion-panel [expanded]="first || idx === releases.length - 1">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon class="release-icon">{{ first ? 'flag' : 'new_releases' }}</mat-icon>
+              {{ release.version }}
+            </mat-panel-title>
+            <mat-panel-description>
+              <span class="release-date">{{ release.date }}</span>
+              <span class="release-headline">{{ release.headline }}</span>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <ul class="release-items">
+            @for (item of release.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
+  </section>
+
+  <mat-divider />
+
+  <section class="catalogue">
+    <div class="catalogue-head">
+      <h2>Каталог демо</h2>
+
+      <mat-chip-listbox aria-label="Фильтр по версии">
+        @for (version of availableVersions; track version) {
+          <mat-chip-option [selected]="versionFilter() === version" (click)="toggleVersion(version)">
+            {{ version }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
+
+    @for (section of catalogue(); track section.group) {
+      <h3 class="group-title">{{ section.group }}</h3>
+
+      <div class="cards">
+        @for (link of section.links; track link.path) {
+          <mat-card appearance="outlined" class="demo-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-avatar">{{ link.icon }}</mat-icon>
+              <mat-card-title>{{ link.title }}</mat-card-title>
+              <mat-card-subtitle>
+                <app-version-chip [since]="link.since" />
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <p>{{ link.summary }}</p>
+            </mat-card-content>
+
+            <mat-card-actions align="end">
+              <a matButton="filled" [routerLink]="link.path">
+                Открыть демо
+                <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+              </a>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
+    } @empty {
+      <p class="empty">Для выбранной версии демо пока нет — снимите фильтр.</p>
+    }
+  </section>
+</div>

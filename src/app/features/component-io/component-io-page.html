@@ -1,0 +1,116 @@
+<app-demo-page
+  heading="input() · output() · model()"
+  since="v17.1"
+  summary="Декораторы @Input/@Output заменены функциями, возвращающими сигналы. Входы стали
+           реактивными значениями, двусторонняя привязка — одной строкой, а ngOnChanges
+           в большинстве компонентов больше не нужен."
+>
+  <app-demo-section
+    heading="Живой виджет: model() + output()"
+    icon="star"
+    description="Оценка связана с родителем через [(value)]. Кнопки эмитят события rated и cleared —
+                 оба объявлены функцией output()."
+  >
+    <app-rating-widget
+      label="Оценка проекта"
+      max="7"
+      [disabled]="widgetDisabled()"
+      [(value)]="rating"
+      (rated)="onRated($event)"
+      (cleared)="onCleared()"
+    />
+
+    <div class="demo-row">
+      <div class="demo-stat accent">
+        <span class="label">Значение в родителе</span>
+        <span class="value">{{ rating() }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Вердикт</span>
+        <span class="value" style="font: var(--mat-sys-title-medium)">{{ ratingLabel() }}</span>
+      </div>
+
+      <button matButton="outlined" type="button" (click)="rating.set(5)">
+        Выставить 5 из родителя
+      </button>
+
+      <mat-slide-toggle [checked]="widgetDisabled()" (change)="widgetDisabled.set($event.checked)">
+        disabled
+      </mat-slide-toggle>
+    </div>
+
+    <div class="demo-log">
+      @for (event of events(); track $index) {
+        <div>{{ event }}</div>
+      } @empty {
+        <div>Событий пока не было.</div>
+      }
+    </div>
+
+    <p hint>
+      Атрибут <code class="demo-inline-code">max="7"</code> передан строкой — его превратил в число
+      <code class="demo-inline-code">transform: numberAttribute</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="input.required(), alias и собственный transform"
+    icon="badge"
+    description="Карточки пользователей загружены через httpResource. Вход user обязателен,
+                 color — алиас для accent, companyLimit обрезает длинное название компании."
+  >
+    <div class="demo-card-list">
+      @for (user of users.value(); track user.id; let even = $even) {
+        <app-user-badge
+          [user]="user"
+          [color]="even ? 'var(--mat-sys-primary)' : 'var(--mat-sys-tertiary)'"
+          companyLimit="18"
+        />
+      } @empty {
+        <p>Загрузка пользователей…</p>
+      }
+    </div>
+
+    <app-code-block [code]="inputSnippet" caption="input() во всех вариантах" />
+
+    <p hint>
+      Попробуйте убрать <code class="demo-inline-code">[user]</code> в шаблоне — сборка упадёт
+      с понятной ошибкой ещё до запуска приложения.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="model(): двусторонняя привязка" icon="sync_alt">
+    <app-code-block [code]="modelSnippet" caption="model()" />
+    <span hint>
+      model() создаёт вход <em>и</em> выход <code class="demo-inline-code">valueChange</code>,
+      поэтому синтаксис [(value)] работает без дополнительного кода.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section heading="output(): события без EventEmitter" icon="podcasts">
+    <app-code-block [code]="outputSnippet" caption="output()" />
+    <span hint>
+      Есть и обратные мосты: <code class="demo-inline-code">outputFromObservable()</code> и
+      <code class="demo-inline-code">outputToObservable()</code> — они показаны на странице RxJS-интеропа.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Шесть декораторов, ручной valueChange и ngOnChanges с проверкой ключей строками."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16, rating-widget.component.ts" />
+
+    <div class="demo-note">
+      Оба стиля можно смешивать в одном проекте: декораторы не удалены, а автоматическая
+      миграция запускается командой
+      <code class="demo-inline-code">ng generate @angular/core:signal-input-migration</code>.
+    </div>
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/components/inputs</span>
+  </app-demo-section>
+</app-demo-page>

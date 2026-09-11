@@ -1,0 +1,104 @@
+<app-demo-page
+  heading="CLI, сборка, тесты и миграции"
+  since="v20"
+  summary="Изменения вне кода приложения: Webpack уступил место esbuild и Vite, появился HMR,
+           обновился style guide именования файлов, а переход с 16 на 20 почти целиком
+           выполняется схематиками ng generate."
+>
+  <app-demo-section
+    heading="Пошаговый план обновления с 16 на 20"
+    icon="upgrade"
+    description="Порядок важен: сначала версии по одной, затем миграции кода, и только в конце zoneless."
+  >
+    <div class="demo-col">
+      @for (step of upgradeSteps; track step.command) {
+        <div class="step">
+          <strong>{{ step.title }}</strong>
+          <code>{{ step.command }}</code>
+          <p>{{ step.description }}</p>
+        </div>
+      }
+    </div>
+
+    <div class="demo-note warn">
+      Каждая команда <code class="demo-inline-code">ng update</code> обновляет ровно одну мажорную
+      версию. Прыжок 16 → 20 одной командой не поддерживается: официальный гайд
+      <code class="demo-inline-code">angular.dev/update-guide</code> тоже расписывает переход по шагам.
+    </div>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Новый style guide именования"
+    icon="drive_file_rename_outline"
+    description="Самое заметное изменение при первом взгляде на проект Angular 20: файлы без суффиксов."
+  >
+    <app-code-block [code]="namingSnippet" caption="Структура проекта: было и стало" />
+
+    <p hint>
+      Этот проект следует новому стилю: корневой компонент лежит в
+      <code class="demo-inline-code">app.ts</code>, а сервис темы — в
+      <code class="demo-inline-code">core/services/theme.store.ts</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Сборка и dev-server"
+    icon="build"
+    description="Билдер сменился дважды: сначала на esbuild-based application, затем переехал
+                 в отдельный пакет @angular/build."
+  >
+    <app-code-block [code]="buildSnippet" lang="json" caption="angular.json" />
+
+    <p hint>
+      В <code class="demo-inline-code">polyfills</code> этого проекта пусто — zone.js не подключён.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="Тестирование" icon="science">
+    <app-code-block [code]="testingSnippet" caption="TestBed в zoneless-проекте" />
+    <span hint>
+      В zoneless-режиме привычка вызывать <code class="demo-inline-code">fixture.detectChanges()</code>
+      после каждого действия сменяется ожиданием
+      <code class="demo-inline-code">await fixture.whenStable()</code>.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section heading="Профилирование и DevTools" icon="monitoring">
+    <app-code-block [code]="devtoolsSnippet" caption="enableProfiling()" />
+    <span hint>
+      Без zone.js стектрейсы стали читаемыми, а дорожка Angular в Performance показывает,
+      какой именно сигнал вызвал перерисовку.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section heading="MCP-сервер и полезные команды" icon="terminal">
+    <app-code-block [code]="mcpSnippet" lang="bash" caption="ng mcp" />
+    <span hint>
+      MCP-сервер отдаёт документацию именно той версии Angular, которая установлена в проекте, —
+      это снимает типичную проблему подсказок, написанных под старые версии.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Что объявлено устаревшим или удалено к v20"
+    icon="delete_sweep"
+    description="Список того, что работало в Angular 16 и требует внимания при обновлении."
+  >
+    <ul class="demo-list">
+      @for (item of deprecations; track item) {
+        <li>{{ item }}</li>
+      }
+    </ul>
+
+    <div class="demo-note">
+      Устаревшие API Angular удаляет не раньше чем через две мажорные версии после объявления,
+      поэтому <code class="demo-inline-code">*ngIf</code> и <code class="demo-inline-code">*ngFor</code>
+      в v20 продолжают работать — просто компилятор советует их заменить.
+    </div>
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/update-guide и angular.dev/tools/cli</span>
+  </app-demo-section>
+</app-demo-page>

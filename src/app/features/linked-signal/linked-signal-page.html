@@ -1,0 +1,108 @@
+<app-demo-page
+  heading="linkedSignal() — состояние, зависящее от источника"
+  since="v19"
+  summary="Писуемый сигнал, который сам пересчитывается при изменении источника. Решает классическую
+           задачу «список опций изменился — сбросить выбранное значение», ради которой в Angular 16
+           приходилось писать effect() с untracked() и allowSignalWrites."
+>
+  <app-demo-section
+    heading="Выбор участника при смене команды"
+    icon="groups"
+    description="Выберите участника, затем переключите команду. Если участника нет в новой команде,
+                 linkedSignal подставит первого; если есть — выбор сохранится."
+  >
+    <mat-chip-listbox aria-label="Команда">
+      @for (name of teamNames; track name) {
+        <mat-chip-option [selected]="team() === name" (click)="selectTeam(name)">
+          {{ name }}
+        </mat-chip-option>
+      }
+    </mat-chip-listbox>
+
+    <div class="members">
+      @for (member of members(); track member.id) {
+        <button
+          type="button"
+          class="member"
+          [class.selected]="selectedId() === member.id"
+          (click)="selectedId.set(member.id)"
+        >
+          <span>{{ member.name }}</span>
+          <span class="role">{{ member.role }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="demo-grid">
+      <div class="demo-stat accent">
+        <span class="label">Выбран</span>
+        <span class="value">{{ selectedMember()?.name ?? '—' }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">selectedId()</span>
+        <span class="value">{{ selectedId() ?? 'null' }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Смен команды</span>
+        <span class="value">{{ resetCount() }}</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="linkedSnippet" caption="linkedSignal с source и computation" />
+
+    <p hint>
+      <code class="demo-inline-code">linkedSignal</code> остаётся обычным
+      <code class="demo-inline-code">WritableSignal</code>: кнопки выше просто вызывают
+      <code class="demo-inline-code">set()</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Короткая форма: сброс значения по умолчанию"
+    icon="restart_alt"
+    description="Количество билетов сбрасывается в 1 при каждой смене выбранного участника,
+                 но между сбросами его можно менять кнопками."
+  >
+    <div class="demo-row">
+      <button matIconButton type="button" (click)="changeTickets(-1)" [disabled]="ticketCount() <= 0">
+        <mat-icon>remove</mat-icon>
+      </button>
+      <div class="demo-stat">
+        <span class="label">Билетов</span>
+        <span class="value">{{ ticketCount() }}</span>
+      </div>
+      <button matIconButton type="button" (click)="changeTickets(1)">
+        <mat-icon>add</mat-icon>
+      </button>
+
+      <span class="demo-spacer"></span>
+      <span>Выберите другого участника — счётчик вернётся к 1.</span>
+    </div>
+
+    <app-code-block [code]="shortSnippet" caption="linkedSignal(() => ...)" />
+
+    <p hint>
+      Отличие от <code class="demo-inline-code">computed()</code>: значение можно перезаписать
+      вручную, и оно останется таким до следующего изменения источника.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось до v19"
+    icon="history"
+    description="Ручная синхронизация через effect — рабочий, но хрупкий приём."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16, team.component.ts" />
+
+    <div class="demo-note warn">
+      Флаг <code class="demo-inline-code">allowSignalWrites</code> из Angular 16–18 в v20 удалён:
+      запись в сигнал из эффекта разрешена по умолчанию, а от зацикливания защищает
+      <code class="demo-inline-code">untracked()</code>.
+    </div>
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/signals/linked-signal</span>
+  </app-demo-section>
+</app-demo-page>

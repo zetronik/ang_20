@@ -1,0 +1,100 @@
+// Высота mat-toolbar на десктопе; используется и в отступе для фиксированной панели.
+$toolbar-height: 64px;
+$toolbar-height-compact: 56px;
+
+:host {
+  display: block;
+}
+
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 4px;
+
+  // Вход `color` у mat-toolbar в Material 3 объявлен устаревшим:
+  // цвета берём напрямую из системных переменных темы.
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.brand-title {
+  font: var(--mat-sys-title-medium);
+  white-space: nowrap;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.runtime-version {
+  font: var(--mat-sys-label-large);
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.app-container {
+  min-height: calc(100vh - #{$toolbar-height});
+  background: var(--mat-sys-surface);
+
+  // По умолчанию Material скроллит содержимое ВНУТРИ mat-sidenav-content.
+  // Из-за этого роутер (который управляет прокруткой документа) не мог
+  // вернуть страницу наверх при переходе. Отдаём прокрутку документу.
+  overflow: visible;
+
+  @media (max-width: 599px) {
+    min-height: calc(100vh - #{$toolbar-height-compact});
+  }
+}
+
+.app-sidenav {
+  width: 320px;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+
+  // Панель зафиксирована в окне, поэтому длинное меню скроллится само.
+  overflow-y: auto;
+}
+
+.sidenav-search {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 16px 4px;
+}
+
+.search-counter {
+  font: var(--mat-sys-label-small);
+  color: var(--mat-sys-on-surface-variant);
+  padding-left: 4px;
+}
+
+.active-link {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  color: var(--mat-sys-on-surface-variant);
+  text-align: center;
+}
+
+.app-content {
+  background: var(--mat-sys-surface);
+  overflow: visible;
+}

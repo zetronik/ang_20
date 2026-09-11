@@ -1,0 +1,97 @@
+<app-demo-page
+  heading="host, hostDirectives и fallback для ng-content"
+  since="v18"
+  summary="Три изменения в устройстве компонентов: host-контракт переехал в объект метаданных,
+           поведения переиспользуются через hostDirectives, а у <ng-content> появилось
+           содержимое по умолчанию."
+>
+  <app-demo-section
+    heading="Панель из двух директив-поведений"
+    icon="widgets"
+    description="Наведите курсор — работает ElevateOnHover. Кликните — сработает выход accentClick,
+                 поднятый наружу из директивы AccentBorder."
+  >
+    <div class="demo-row">
+      @for (item of tones; track item) {
+        <button matButton="outlined" type="button" (click)="tone.set(item)">
+          tone = {{ item }}
+        </button>
+      }
+
+      <mat-slide-toggle [checked]="compact()" (change)="compact.set($event.checked)">
+        compact
+      </mat-slide-toggle>
+    </div>
+
+    <app-fancy-panel
+      [tone]="tone()"
+      [compact]="compact()"
+      (accentClick)="onAccentClick($event)"
+    >
+      <span panelTitle>Панель с полным набором слотов</span>
+
+      Этот текст попал в слот по умолчанию. Обе директивы-поведения подключены через
+      hostDirectives, поэтому в шаблоне нет ни одного дополнительного атрибута.
+
+      <ng-container panelActions>
+        <button matButton type="button">Сохранить</button>
+        <button matButton type="button">Отмена</button>
+      </ng-container>
+    </app-fancy-panel>
+
+    <app-fancy-panel [tone]="tone()">
+      <span panelTitle>Панель без контента и без действий</span>
+    </app-fancy-panel>
+
+    <app-fancy-panel [tone]="tone()" />
+
+    <div class="demo-log">
+      @for (entry of clicks(); track $index) {
+        <div>{{ entry }}</div>
+      } @empty {
+        <div>Кликните по панели — выход директивы эмитит событие.</div>
+      }
+    </div>
+
+    <p hint>
+      Третья панель не получила вообще ничего — во всех трёх слотах отрисовался fallback,
+      объявленный прямо внутри <code class="demo-inline-code">&lt;ng-content&gt;</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="Объект host вместо декораторов" icon="settings_ethernet">
+    <app-code-block [code]="hostSnippet" caption="elevate-on-hover.ts" />
+    <span hint>
+      В tsconfig нового проекта включён <code class="demo-inline-code">typeCheckHostBindings</code>,
+      поэтому выражения в host проверяются компилятором так же строго, как шаблон.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section heading="hostDirectives: композиция поведений" icon="extension">
+    <app-code-block [code]="hostDirectivesSnippet" caption="fancy-panel.ts" />
+    <span hint>
+      Так устроены и сами компоненты Material: например, MatButton подмешивает поведение ripple.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section heading="Содержимое по умолчанию для ng-content" icon="inventory_2">
+    <app-code-block [code]="contentSnippet" caption="fallback-контент" />
+    <span hint>
+      В этом проекте приём используется в компоненте
+      <code class="demo-inline-code">app-demo-section</code> — в слоте подсказки внизу каждой секции.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="@HostBinding на каждое свойство и эмуляция fallback через ContentChild."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/directives/directive-composition-api</span>
+  </app-demo-section>
+</app-demo-page>

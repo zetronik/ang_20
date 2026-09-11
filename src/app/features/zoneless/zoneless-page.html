@@ -1,0 +1,126 @@
+<app-demo-page
+  heading="Zoneless change detection"
+  since="v20"
+  summary="Приложение работает без zone.js: change detection запускают сигналы и шаблонные
+           обработчики событий, а не перехват всех асинхронных API браузера. В Angular 16 такой
+           режим был невозможен в принципе; в v18 он появился как экспериментальный,
+           а в v20 стал стабильным."
+>
+  <app-demo-section
+    heading="Проверка: zone.js в рантайме"
+    icon="fact_check"
+    description="Это приложение создано командой ng new --zoneless, поэтому полифилла zone.js в бандле нет."
+  >
+    <div class="demo-grid">
+      <div class="demo-stat" [class.accent]="!zoneLoaded">
+        <span class="label">Zone в globalThis</span>
+        <span class="value" style="font: var(--mat-sys-title-medium)">
+          {{ zoneLoaded ? 'загружен' : 'отсутствует' }}
+        </span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Проходов рендера этой страницы</span>
+        <span class="value">{{ renderPasses }}</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="configSnippet" caption="app.config.ts этого проекта" />
+
+    <p hint>
+      Счётчик проходов увеличивает <code class="demo-inline-code">afterEveryRender()</code> —
+      видно, что рендер происходит не «всё время», а только по конкретным причинам.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Сигнал против обычного поля"
+    icon="science"
+    description="Таймер каждые 500 мс увеличивает обычное поле класса. Значение в памяти растёт,
+                 но шаблон об этом не узнаёт: setInterval больше не запускает change detection."
+  >
+    <div class="demo-row">
+      <button matButton="filled" type="button" (click)="start()" [disabled]="running()">
+        <mat-icon>play_arrow</mat-icon>
+        Запустить таймер
+      </button>
+      <button matButton="outlined" type="button" (click)="stop()" [disabled]="!running()">
+        <mat-icon>stop</mat-icon>
+        Остановить
+      </button>
+      <button matButton="tonal" type="button" (click)="incrementSignal()">
+        <mat-icon>add</mat-icon>
+        +1 к сигналу
+      </button>
+      <button matButton="outlined" type="button" (click)="forceRender()">
+        <mat-icon>refresh</mat-icon>
+        ApplicationRef.tick()
+      </button>
+      <button matButton type="button" (click)="reset()">Сбросить</button>
+    </div>
+
+    <div class="demo-grid">
+      <div class="demo-stat">
+        <span class="label">Обычное поле (setInterval)</span>
+        <span class="value">{{ plainCounter }}</span>
+      </div>
+      <div class="demo-stat accent">
+        <span class="label">Сигнал</span>
+        <span class="value">{{ signalCounter() }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Проходов рендера</span>
+        <span class="value">{{ renderPasses }}</span>
+      </div>
+    </div>
+
+    <div class="demo-note warn">
+      Запустите таймер и не трогайте страницу: левый счётчик замрёт. Нажмите
+      «+1 к сигналу» или <code class="demo-inline-code">ApplicationRef.tick()</code> —
+      и он мгновенно «догонит», потому что произошёл рендер компонента.
+      В Angular 16 с zone.js оба счётчика шли бы синхронно, а вместе с ними
+      проверялось бы всё дерево компонентов приложения.
+    </div>
+
+    <app-code-block [code]="triggersSnippet" caption="Что запускает change detection" />
+
+    <p hint>
+      Это и есть главное требование zoneless-режима: состояние, которое читает шаблон,
+      должно быть сигналом.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Что менять при переходе с Angular 16"
+    icon="move_up"
+    description="Правки механические: поля класса становятся сигналами, а длинные асинхронные
+                 операции регистрируются в PendingTasks."
+  >
+    <app-code-block [code]="migrationSnippet" caption="Типичная миграция компонента" />
+
+    <ul class="demo-list">
+      <li>Переведите состояние шаблона на <code class="demo-inline-code">signal()</code>.</li>
+      <li>
+        Замените ручные подписки на <code class="demo-inline-code">httpResource()</code>,
+        <code class="demo-inline-code">rxResource()</code> или
+        <code class="demo-inline-code">toSignal()</code>.
+      </li>
+      <li>
+        Уберите <code class="demo-inline-code">ngZone.run()</code> и
+        <code class="demo-inline-code">runOutsideAngular()</code> — они больше не нужны.
+      </li>
+      <li>
+        Оберните долгие фоновые операции в <code class="demo-inline-code">PendingTasks</code>,
+        чтобы SSR и тесты дожидались их завершения.
+      </li>
+      <li>
+        Включайте режим постепенно: сначала <code class="demo-inline-code">OnPush</code> везде,
+        затем <code class="demo-inline-code">provideZonelessChangeDetection()</code>.
+      </li>
+    </ul>
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/zoneless</span>
+  </app-demo-section>
+</app-demo-page>

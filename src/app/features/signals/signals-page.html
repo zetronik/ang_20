@@ -1,0 +1,140 @@
+<app-demo-page
+  heading="Сигналы: signal / computed / effect"
+  since="v17"
+  summary="Сигналы — главное архитектурное изменение между 16 и 20 версией. В v16 это был developer
+           preview, которым мало кто пользовался в продакшене. В v20 на сигналах построено всё:
+           входы компонентов, запросы к DOM, ресурсы и сам change detection."
+>
+  <app-demo-section
+    heading="signal() и computed() в работе"
+    icon="bolt"
+    description="Корзина: строки товаров и скидка — это signal(), а подытог, скидка в рублях
+                 и итоговая сумма — computed(). Ни одного вызова markForCheck()."
+  >
+    <div class="cart">
+      @for (line of lines(); track line.id) {
+        <div class="cart-line">
+          <span class="cart-title">{{ line.title }}</span>
+          <span class="cart-price">{{ line.price }} ₴</span>
+
+          <button matIconButton type="button" (click)="changeQty(line.id, -1)" [disabled]="line.qty === 0">
+            <mat-icon>remove</mat-icon>
+          </button>
+          <span class="cart-qty">{{ line.qty }}</span>
+          <button matIconButton type="button" (click)="changeQty(line.id, 1)">
+            <mat-icon>add</mat-icon>
+          </button>
+
+          <span class="cart-sum">{{ line.price * line.qty }} ₴</span>
+        </div>
+      }
+    </div>
+
+    <div class="demo-row">
+      <label class="slider-label">
+        Скидка: {{ discountPercent() }}%
+        <mat-slider min="0" max="50" step="5" discrete>
+          <input matSliderThumb [value]="discountPercent()" (valueChange)="setDiscount($event)" />
+        </mat-slider>
+      </label>
+
+      <mat-slide-toggle [checked]="vatIncluded()" (change)="vatIncluded.set($event.checked)">
+        Цены с НДС
+      </mat-slide-toggle>
+    </div>
+
+    <div class="demo-grid">
+      <div class="demo-stat">
+        <span class="label">Подытог</span>
+        <span class="value">{{ subtotal() }} ₴</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Скидка</span>
+        <span class="value">−{{ discount() }} ₴</span>
+      </div>
+      <div class="demo-stat accent">
+        <span class="label">Итого</span>
+        <span class="value">{{ total() }} ₴</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">{{ orderLabel() }}</span>
+        <span class="value">{{ computedRuns }}</span>
+        <span class="label">пересчётов computed</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="signalSnippet" caption="cart-page.ts" />
+
+    <p hint>
+      Счётчик пересчётов растёт только при реальном изменении итога — это и есть мемоизация
+      <code class="demo-inline-code">computed()</code>. Обычный геттер в Angular 16 вызывался
+      бы на каждом проходе change detection.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="effect() и untracked()"
+    icon="track_changes"
+    description="Эффект подписан только на total(). Значение скидки читается через untracked(),
+                 поэтому само по себе оно эффект не перезапускает."
+  >
+    <div class="demo-log">
+      @for (entry of log(); track $index) {
+        <div>{{ entry }}</div>
+      } @empty {
+        <div>Эффект ещё не срабатывал.</div>
+      }
+    </div>
+
+    <app-code-block [code]="effectSnippet" caption="effect + untracked" />
+
+    <p hint>
+      Внутри <code class="demo-inline-code">effect()</code> запись в сигнал тоже нужно оборачивать
+      в <code class="demo-inline-code">untracked()</code>, иначе эффект зациклится сам на себе.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Своя функция сравнения"
+    icon="compare"
+    description="signal() принимает вторым аргументом equal. Если функция считает значения
+                 одинаковыми, уведомления подписчиков не будет вовсе."
+  >
+    <div class="demo-row">
+      <button matButton="outlined" type="button" (click)="setSameCoords()">
+        Записать те же координаты
+      </button>
+      <button matButton="filled" type="button" (click)="setNewCoords()">
+        Записать случайные координаты
+      </button>
+
+      <div class="demo-stat">
+        <span class="label">Координаты</span>
+        <span class="value">{{ coords().x }} : {{ coords().y }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Срабатываний effect</span>
+        <span class="value">{{ coordsNotifications() }}</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="equalSnippet" caption="signal с equal" />
+
+    <p hint>
+      Нажмите «те же координаты» несколько раз: счётчик срабатываний не изменится.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Тот же функционал на RxJS — для сравнения объёма кода и количества мест, где можно ошибиться."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16, cart.component.ts" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/signals</span>
+  </app-demo-section>
+</app-demo-page>

@@ -1,0 +1,87 @@
+<mat-toolbar class="app-toolbar">
+  <button matIconButton type="button" (click)="toggleSidenav()" matTooltip="Меню">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <a class="brand" routerLink="/">
+    <mat-icon>rocket_launch</mat-icon>
+    <span class="brand-title">Angular 16 &rarr; 20</span>
+  </a>
+
+  <span class="spacer"></span>
+
+  <span class="runtime-version" matTooltip="Версия Angular, на которой запущено приложение">
+    v{{ angularVersion }}
+  </span>
+
+  <button matIconButton type="button" (click)="theme.toggle()" [matTooltip]="theme.isDark() ? 'Светлая тема' : 'Тёмная тема'">
+    <mat-icon>{{ theme.icon() }}</mat-icon>
+  </button>
+
+  <a
+    matIconButton
+    href="https://angular.dev/update-guide?v=16.0-20.0"
+    target="_blank"
+    rel="noopener"
+    matTooltip="Официальный гайд по обновлению"
+  >
+    <mat-icon>open_in_new</mat-icon>
+  </a>
+</mat-toolbar>
+
+<mat-sidenav-container class="app-container">
+  <!--
+    fixedInViewport прикрепляет панель к окну (position: fixed), а не к контейнеру.
+    Благодаря этому прокручивается сам документ, и штатный scrollPositionRestoration
+    из provideRouter(withInMemoryScrolling(...)) работает как задумано.
+  -->
+  <mat-sidenav
+    class="app-sidenav"
+    [mode]="sidenavMode()"
+    [opened]="sidenavOpened()"
+    [fixedInViewport]="true"
+    [fixedTopGap]="toolbarHeight()"
+  >
+    <div class="sidenav-search">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Поиск по фичам</mat-label>
+        <input matInput type="search" [value]="query()" (input)="onSearch($event)" />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- @let — новая декларация локальной переменной в шаблоне (Angular 18.1+). -->
+      @let total = foundCount();
+      <span class="search-counter">Найдено демо: {{ total }}</span>
+    </div>
+
+    <mat-nav-list>
+      <a mat-list-item routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon matListItemIcon>home</mat-icon>
+        <span matListItemTitle>Обзор изменений</span>
+      </a>
+
+      @for (section of sections(); track section.group) {
+        <h3 matSubheader>{{ section.group }}</h3>
+
+        @for (link of section.links; track link.path) {
+          <a mat-list-item [routerLink]="link.path" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>{{ link.icon }}</mat-icon>
+            <span matListItemTitle>{{ link.title }}</span>
+            <span matListItemLine>
+              <app-version-chip [since]="link.since" />
+            </span>
+          </a>
+        }
+      } @empty {
+        <div class="empty-state">
+          <mat-icon>search_off</mat-icon>
+          <p>Ничего не найдено по запросу «{{ query() }}»</p>
+        </div>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="app-content">
+    <router-outlet />
+  </mat-sidenav-content>
+</mat-sidenav-container>

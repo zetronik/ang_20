@@ -1,0 +1,126 @@
+<app-demo-page
+  heading="@defer — ленивая загрузка кусков шаблона"
+  since="v17"
+  summary="Один из самых практичных блоков нового синтаксиса. Компилятор выносит зависимости
+           @defer-блока в отдельный чанк и подгружает его по триггеру: при появлении в области
+           видимости, по наведению, по клику, в простое браузера или по условию."
+>
+  <app-demo-section
+    heading="on interaction — загрузка по клику"
+    icon="touch_app"
+    description="Кликните по заглушке: только в этот момент браузер скачает чанк с компонентом
+                 и выполнит HTTP-запрос за фотографиями. Откройте вкладку Network, чтобы убедиться."
+  >
+    @defer (on interaction) {
+      <app-photo-wall [albumId]="1" />
+    } @placeholder (minimum 400ms) {
+      <div class="placeholder">
+        <div>
+          <strong>Кликните сюда</strong>
+          <p>Чанк с компонентом ещё не загружен</p>
+        </div>
+      </div>
+    } @loading (after 100ms; minimum 500ms) {
+      <div class="loading">
+        <mat-progress-spinner mode="indeterminate" diameter="28" />
+        <span>Загружаем чанк и данные…</span>
+      </div>
+    } @error {
+      <div class="demo-note warn">Не удалось загрузить блок.</div>
+    }
+
+    <p hint>
+      <code class="demo-inline-code">minimum</code> у &#64;placeholder и
+      <code class="demo-inline-code">after</code> у &#64;loading убирают мерцание,
+      когда чанк приходит слишком быстро. Важно: в режиме
+      <code class="demo-inline-code">ng serve</code> с включённым HMR Angular грузит зависимости
+      &#64;defer-блоков заранее (предупреждение NG0751 в консоли) — чтобы увидеть настоящую
+      ленивую загрузку, запустите <code class="demo-inline-code">ng serve --no-hmr</code>
+      или соберите проект командой <code class="demo-inline-code">ng build</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="on viewport — загрузка при прокрутке"
+    icon="visibility"
+    description="Блок ниже начнёт грузиться, только когда его заглушка попадёт в область видимости.
+                 Прокрутите страницу через отступ."
+  >
+    <div class="spacer-block">Прокрутите ниже — там ждёт блок с триггером on viewport</div>
+
+    @defer (on viewport; prefetch on idle) {
+      <app-todo-chart />
+    } @placeholder {
+      <div class="placeholder">Диаграмма появится при прокрутке</div>
+    } @loading {
+      <div class="loading">
+        <mat-progress-spinner mode="indeterminate" diameter="28" />
+        <span>Строим диаграмму…</span>
+      </div>
+    }
+
+    <p hint>
+      Здесь два независимых триггера: <code class="demo-inline-code">prefetch on idle</code>
+      скачивает чанк заранее, в простое браузера, а <code class="demo-inline-code">on viewport</code>
+      только отрисовывает его.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="when — загрузка по условию"
+    icon="toggle_on"
+    description="Триггер when принимает любое выражение. Как только оно станет истинным,
+                 блок загрузится и обратно уже не свернётся."
+  >
+    <mat-slide-toggle [checked]="showChart()" (change)="showChart.set($event.checked)">
+      Показать вторую диаграмму
+    </mat-slide-toggle>
+
+    @defer (when showChart()) {
+      <app-todo-chart />
+    } @placeholder {
+      <div class="placeholder">Переключатель выключен — блок не загружен</div>
+    }
+
+    <p hint>
+      Важная деталь: <code class="demo-inline-code">&#64;defer</code> — это не
+      <code class="demo-inline-code">&#64;if</code>. Загруженный блок остаётся в DOM,
+      даже если условие снова станет ложным.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="Все триггеры и блоки" icon="list">
+    <app-code-block [code]="triggersSnippet" lang="html" caption="Полный синтаксис @defer" />
+    <span hint>
+      Триггер по умолчанию — <code class="demo-inline-code">on idle</code>:
+      если условие не указано, блок загрузится в первый простой браузера.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Инкрементальная гидратация (для SSR)"
+    icon="water_drop"
+    description="Этот проект собран как SPA, поэтому блок ниже — только код для справки."
+  >
+    <app-code-block [code]="hydrateSnippet" lang="html" caption="@defer (hydrate on …)" />
+
+    <div class="demo-note">
+      Инкрементальная гидратация появилась в Angular 19 и решает главную проблему SSR:
+      раньше вся страница «оживала» целиком и сразу, скачивая весь JavaScript приложения.
+      Теперь блок приходит готовым HTML, а его JavaScript загружается по триггеру.
+    </div>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Ручной динамический импорт, ViewContainerRef и самописные триггеры."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/templates/defer</span>
+  </app-demo-section>
+</app-demo-page>

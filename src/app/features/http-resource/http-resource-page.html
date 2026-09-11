@@ -1,0 +1,170 @@
+<app-demo-page
+  heading="httpResource() — HTTP как сигнал"
+  since="v20"
+  summary="Самое заметное новшество Angular 20 в работе с данными: GET-запрос описывается функцией,
+           возвращающей URL или объект запроса. Все параметры реактивны, отмена и перезагрузка
+           встроены, а ответ, код, заголовки и ошибка доступны как отдельные сигналы."
+>
+  <app-demo-section
+    heading="Минимальная форма"
+    icon="http"
+    description="Один вызов — и список пользователей уже загружен. Ни сервиса, ни подписки, ни ngOnInit."
+  >
+    @if (users.isLoading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <div class="demo-row">
+      @for (user of users.value(); track user.id) {
+        <div class="demo-stat">
+          <span class="label">{{ user.username }}</span>
+          <span class="value" style="font: var(--mat-sys-title-medium)">{{ user.name }}</span>
+          <span class="label">{{ user.company.name }}</span>
+        </div>
+      }
+    </div>
+
+    <p hint>
+      <code class="demo-inline-code">httpResource</code> использует обычный
+      <code class="demo-inline-code">HttpClient</code>, поэтому интерцепторы, тестовый бэкенд
+      и все остальные возможности продолжают работать.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Реактивный объект запроса"
+    icon="tune"
+    description="Смена пользователя или фильтра мгновенно перезапускает запрос: достаточно того,
+                 что сигналы читаются внутри функции запроса."
+  >
+    <div class="demo-row">
+      <mat-chip-listbox aria-label="Пользователь">
+        @for (id of [1, 2, 3, 4, 5]; track id) {
+          <mat-chip-option [selected]="selectedUserId() === id" (click)="selectedUserId.set(id)">
+            userId = {{ id }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+
+      <mat-button-toggle-group
+        [value]="completed()"
+        (change)="completed.set($event.value)"
+        aria-label="Статус задачи"
+      >
+        <mat-button-toggle value="all">Все</mat-button-toggle>
+        <mat-button-toggle value="true">Выполненные</mat-button-toggle>
+        <mat-button-toggle value="false">Открытые</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <button matButton="outlined" type="button" (click)="todos.reload()">
+        <mat-icon>refresh</mat-icon>
+        reload()
+      </button>
+    </div>
+
+    @if (todos.isLoading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <div class="demo-row">
+      <div class="demo-stat">
+        <span class="label">HTTP-код</span>
+        <span class="value">{{ todos.statusCode() ?? '—' }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Статус ресурса</span>
+        <span class="value" style="font: var(--mat-sys-title-medium)">{{ todos.status() }}</span>
+      </div>
+      <div class="demo-stat">
+        <span class="label">Задач получено</span>
+        <span class="value">{{ todos.value().length }}</span>
+      </div>
+      <div class="demo-stat accent">
+        <span class="label">Из них выполнено</span>
+        <span class="value">{{ doneCount() }}</span>
+      </div>
+    </div>
+
+    <table mat-table [dataSource]="todos.value()">
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let todo">{{ todo.id }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef>Задача</th>
+        <td mat-cell *matCellDef="let todo">{{ todo.title }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="completed">
+        <th mat-header-cell *matHeaderCellDef>Статус</th>
+        <td mat-cell *matCellDef="let todo">
+          @if (todo.completed) {
+            <span class="done">выполнено</span>
+          } @else {
+            <span class="pending">открыта</span>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <div class="demo-note">
+      Заголовки ответа доступны сигналом <code class="demo-inline-code">headers()</code>:
+      @for (name of headerNames(); track name) {
+        <code class="demo-inline-code">{{ name }}</code>
+      } @empty {
+        <span>ещё не получены</span>
+      }
+    </div>
+
+    <app-code-block [code]="httpResourceSnippet" caption="httpResource с объектом запроса" />
+
+    <p hint>
+      <code class="demo-inline-code">mat-table</code> здесь намеренно оставлен со старым синтаксисом
+      <code class="demo-inline-code">*matCellDef</code>: структурные директивы никуда не делись,
+      просто <code class="demo-inline-code">*ngIf</code> и <code class="demo-inline-code">*ngFor</code>
+      в v20 помечены устаревшими.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="parse и не-JSON ответы"
+    icon="rule"
+    description="parse валидирует и трансформирует сырой ответ; httpResource.text() читает ответ как строку."
+  >
+    <div class="demo-row">
+      @for (name of userNames.value(); track name) {
+        <span class="demo-inline-code">{{ name }}</span>
+      }
+    </div>
+
+    <pre class="demo-log raw">{{ rawPost.value() }}</pre>
+
+    <app-code-block [code]="parseSnippet" caption="parse + подфункции" />
+
+    <p hint>
+      В реальном проекте в <code class="demo-inline-code">parse</code> удобно подставить схему
+      zod — тогда несоответствие контракта бэкенда попадёт в
+      <code class="demo-inline-code">error()</code>, а не «протечёт» в шаблон.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Сервис, HttpParams, BehaviorSubject и ручные флаги загрузки."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>
+      httpResource делает только чтение данных. Для мутаций (POST/PUT/DELETE) по-прежнему
+      используется обычный HttpClient.
+    </span>
+  </app-demo-section>
+</app-demo-page>

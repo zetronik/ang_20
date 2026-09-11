@@ -1,0 +1,133 @@
+<app-demo-page
+  heading="Material 3 и темизация"
+  since="v18"
+  summary="Angular Material переехал на Material 3, а вместе с ним изменился и способ темизации:
+           вместо десятков строк Sass — один миксин mat.theme(), вместо отдельной тёмной темы —
+           CSS-свойство color-scheme, а цвета доступны как обычные CSS-переменные --mat-sys-*."
+>
+  <app-demo-section
+    heading="Переключение темы"
+    icon="palette"
+    description="Вся тёмная тема этого приложения — это одна строка: color-scheme: dark на body.
+                 Никакой повторной генерации стилей."
+  >
+    <div class="demo-row">
+      <mat-slide-toggle [checked]="theme.isDark()" (change)="theme.toggle()">
+        Тёмная тема
+      </mat-slide-toggle>
+
+      <div class="demo-stat">
+        <span class="label">Текущий режим</span>
+        <span class="value" style="font: var(--mat-sys-title-medium)">{{ theme.mode() }}</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="themeSnippet" lang="scss" caption="src/styles.scss этого проекта" />
+
+    <p hint>
+      Значение <code class="demo-inline-code">light dark</code> отдаёт выбор темы системным
+      настройкам пользователя — тоже без единой строчки JavaScript.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Системные переменные --mat-sys-*"
+    icon="format_paint"
+    description="Эти же переменные использованы во всех демо этого проекта: карточки, бейджи,
+                 блоки кода нарисованы токенами Material, а не хардкодом цветов."
+  >
+    @for (group of tokenGroups; track group.title) {
+      <h4>{{ group.title }}</h4>
+      <div class="swatches">
+        @for (token of group.tokens; track token) {
+          <div class="swatch" [style.background]="'var(' + token + ')'">
+            <strong>{{ token }}</strong>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="type-scale">
+      <p style="font: var(--mat-sys-display-small)">display-small</p>
+      <p style="font: var(--mat-sys-headline-small)">headline-small</p>
+      <p style="font: var(--mat-sys-title-medium)">title-medium</p>
+      <p style="font: var(--mat-sys-body-medium)">body-medium</p>
+      <p style="font: var(--mat-sys-label-small)">label-small</p>
+    </div>
+
+    <app-code-block [code]="tokensSnippet" lang="scss" caption="Использование токенов" />
+
+    <p hint>
+      Переменные пересчитываются при смене темы автоматически, поэтому собственные компоненты
+      темнеют вместе с Material без дополнительного кода.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Компоненты Material 20"
+    icon="widgets"
+    description="Кнопки получили новый API appearance, а всё остальное анимируется на CSS —
+                 пакет @angular/animations в этом проекте не установлен вовсе."
+  >
+    <div class="demo-row">
+      @for (appearance of buttonAppearances; track appearance) {
+        <button [matButton]="appearance" type="button">{{ appearance }}</button>
+      }
+    </div>
+
+    <div class="demo-row">
+      <button matIconButton matTooltip="Иконочная кнопка"><mat-icon>favorite</mat-icon></button>
+      <button matFab type="button"><mat-icon>add</mat-icon></button>
+      <button matMiniFab type="button"><mat-icon>edit</mat-icon></button>
+
+      <mat-icon matBadge="7" matBadgeColor="warn">notifications</mat-icon>
+
+      <mat-chip-set>
+        <mat-chip>Angular 20</mat-chip>
+        <mat-chip highlighted>Material 3</mat-chip>
+        <mat-chip>zoneless</mat-chip>
+      </mat-chip-set>
+
+      <button matButton="filled" type="button" (click)="showSnack()">Показать snackbar</button>
+    </div>
+
+    <mat-progress-bar mode="determinate" [value]="progress()" />
+
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Карточка Material 3</mat-card-title>
+        <mat-card-subtitle>appearance="outlined"</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        Форма скруглений, отступы и цвета берутся из токенов темы, поэтому карточка одинаково
+        хорошо выглядит в светлом и тёмном режиме.
+      </mat-card-content>
+    </mat-card>
+
+    <p hint>
+      Новый компонент Angular Material 20 — <code class="demo-inline-code">MatTimepicker</code>;
+      он показан в живой форме на странице «Формы».
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="Точечная кастомизация: миксины overrides" icon="tune">
+    <app-code-block [code]="overrideSnippet" lang="scss" caption="mat.*-overrides()" />
+    <span hint>
+      Это официальная замена <code class="demo-inline-code">::ng-deep</code> и перекрытию
+      внутренних классов Material, которые ломались при каждом обновлении.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Material 2 и ручная сборка темы на Sass."
+  >
+    <app-code-block [code]="beforeSnippet" lang="scss" caption="Angular 16 + Material 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: material.angular.dev/guide/theming</span>
+  </app-demo-section>
+</app-demo-page>

@@ -1,0 +1,155 @@
+<app-demo-page
+  heading="resource() и rxResource()"
+  since="v19"
+  summary="Асинхронная загрузка данных, описанная декларативно. Ресурс сам следит за реактивными
+           параметрами, отменяет устаревшие запросы и отдаёт значение, статус и ошибку как сигналы.
+           В Angular 16 всё это собиралось вручную из BehaviorSubject, switchMap и трёх полей класса."
+>
+  <app-demo-section
+    heading="resource(): посты выбранного пользователя"
+    icon="cloud_sync"
+    description="Переключайте пользователя — запрос к jsonplaceholder перезапускается,
+                 а предыдущий отменяется по abortSignal."
+  >
+    <div class="demo-row">
+      <mat-chip-listbox aria-label="Пользователь">
+        @for (id of userIds; track id) {
+          <mat-chip-option [selected]="userId() === id" (click)="userId.set(id)">
+            userId = {{ id }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+
+      <span class="demo-spacer"></span>
+
+      <button matButton="outlined" type="button" (click)="posts.reload()">
+        <mat-icon>refresh</mat-icon>
+        reload()
+      </button>
+      <button matButton="outlined" type="button" (click)="renameFirstPost()">
+        <mat-icon>edit</mat-icon>
+        update() локально
+      </button>
+      <button matButton="tonal" type="button" (click)="breakUrl.set(!breakUrl())">
+        <mat-icon>bug_report</mat-icon>
+        {{ breakUrl() ? 'Починить URL' : 'Сломать URL' }}
+      </button>
+    </div>
+
+    @if (posts.isLoading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <div class="demo-row">
+      <span class="status-badge" [class]="postsStatus()">
+        <mat-icon inline>info</mat-icon>
+        status() = {{ postsStatus() }}
+      </span>
+      <span>{{ statusHint() }}</span>
+    </div>
+
+    @if (posts.error(); as error) {
+      <div class="demo-note warn">
+        <strong>error()</strong>: {{ error }}
+      </div>
+    }
+
+    <!-- hasValue() — type guard: внутри блока value() гарантированно не undefined -->
+    @if (posts.hasValue()) {
+      <div class="demo-col">
+        @for (post of posts.value(); track post.id) {
+          <div class="post">
+            <h4>#{{ post.id }} · {{ post.title }}</h4>
+            <p>{{ post.body }}</p>
+            <button matButton type="button" (click)="selectPost(post)">
+              Показать комментарии
+            </button>
+          </div>
+        } @empty {
+          <p>Постов нет.</p>
+        }
+      </div>
+    }
+
+    <app-code-block [code]="resourceSnippet" caption="resource() целиком" />
+
+    <p hint>
+      Нажмите «Сломать URL» — ресурс перейдёт в статус <code class="demo-inline-code">error</code>,
+      затем «Починить». Обратите внимание: при ошибке предыдущее значение не теряется молча,
+      а состояние явно описано статусом.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="rxResource(): комментарии к посту"
+    icon="forum"
+    description="Тот же API, но источник данных — Observable из HttpClient. Все запросы видны
+                 в журнале ниже: отменённые помечены как aborted."
+  >
+    @if (selectedPostId() === null) {
+      <p>Выберите пост выше, чтобы загрузить комментарии.</p>
+    } @else {
+      @if (comments.isLoading()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      <div class="demo-col">
+        @for (comment of comments.value(); track comment.id) {
+          <div class="post">
+            <h4>{{ comment.name }}</h4>
+            <p>{{ comment.email }} — {{ comment.body }}</p>
+          </div>
+        } @empty {
+          <p>Комментариев нет.</p>
+        }
+      </div>
+    }
+
+    <app-code-block [code]="rxResourceSnippet" caption="rxResource()" />
+
+    <div class="demo-col">
+      <div class="demo-row">
+        <div class="demo-stat">
+          <span class="label">Всего запросов</span>
+          <span class="value">{{ requestLog.total() }}</span>
+        </div>
+        <div class="demo-stat">
+          <span class="label">В процессе</span>
+          <span class="value">{{ requestLog.pending() }}</span>
+        </div>
+        <div class="demo-stat">
+          <span class="label">Отменено</span>
+          <span class="value">{{ requestLog.aborted() }}</span>
+        </div>
+        <button matButton="outlined" type="button" (click)="requestLog.clear()">Очистить журнал</button>
+      </div>
+
+      <div class="demo-log">
+        @for (entry of requestLog.all(); track entry.id) {
+          <div>{{ entry.status }} · {{ entry.method }} {{ entry.url }} · {{ entry.durationMs ?? '…' }} мс</div>
+        } @empty {
+          <div>Журнал пуст.</div>
+        }
+      </div>
+    </div>
+
+    <p hint>
+      Журнал наполняет функциональный интерцептор
+      <code class="demo-inline-code">HttpInterceptorFn</code> — ещё одно отличие от v16,
+      где интерцептор был классом в мультипровайдере HTTP_INTERCEPTORS.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Тот же экран на BehaviorSubject + switchMap."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16, posts.component.ts" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/signals/resource</span>
+  </app-demo-section>
+</app-demo-page>

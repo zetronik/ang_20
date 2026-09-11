@@ -1,0 +1,108 @@
+<app-demo-page
+  heading="Роутинг: функциональные guard-ы, input binding и View Transitions"
+  since="v18"
+  summary="Классы-guard-ы превратились в функции, данные маршрута приходят прямо во входы компонента,
+           redirectTo научился быть функцией, а переходы между страницами анимируются нативным
+           View Transitions API браузера."
+>
+  <app-demo-section
+    heading="Живой вложенный маршрут"
+    icon="alt_route"
+    description="Ссылки ниже меняют параметр пути и query-параметр. Компонент карточки не подписан
+                 на ActivatedRoute вообще — всё приходит через сигнальные входы."
+  >
+    <div class="nav-links">
+      @for (id of userIds; track id) {
+        <a
+          matButton="outlined"
+          [routerLink]="['user', id]"
+          [queryParams]="{ tab: tab() }"
+          routerLinkActive="active-user"
+        >
+          user/{{ id }}
+        </a>
+      }
+    </div>
+
+    <div class="nav-links">
+      @for (name of tabs; track name) {
+        <button matButton type="button" (click)="tab.set(name)" [class.active-user]="tab() === name">
+          ?tab={{ name }}
+        </button>
+      }
+
+      <a matButton="tonal" [routerLink]="['legacy', 7]">
+        <mat-icon>call_split</mat-icon>
+        legacy/7 → редирект функцией
+      </a>
+
+      <a matButton [routerLink]="['user', 999]">
+        <mat-icon>block</mat-icon>
+        user/999 → guard вернёт UrlTree
+      </a>
+    </div>
+
+    <!-- Вложенный router-outlet, самозакрывающийся тег -->
+    <router-outlet />
+
+    <div class="demo-row">
+      <div class="demo-stat">
+        <span class="label">Текущий URL</span>
+        <span class="value" style="font: var(--mat-sys-body-medium)">{{ currentUrl() }}</span>
+      </div>
+      @if (isRedirected()) {
+        <div class="demo-stat accent">
+          <span class="label">Сработал</span>
+          <span class="value" style="font: var(--mat-sys-title-medium)">redirectTo-функция</span>
+        </div>
+      }
+    </div>
+
+    <p hint>
+      Нажмите <code class="demo-inline-code">user/999</code> — guard вернёт
+      <code class="demo-inline-code">UrlTree</code> и роутер перенаправит на первого пользователя.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="Конфигурация маршрутов" icon="settings">
+    <app-code-block [code]="routesSnippet" caption="routing.routes.ts" />
+    <span hint>
+      Весь раздел подключён к приложению одной строкой:
+      <code class="demo-inline-code">loadChildren: () => import('./routing.routes').then(m => m.ROUTING_ROUTES)</code>
+    </span>
+  </app-demo-section>
+
+  <app-demo-section heading="Функциональные guard-ы и resolver-ы" icon="verified_user">
+    <app-code-block [code]="guardsSnippet" caption="routing.guards.ts" />
+    <span hint>
+      В Angular 20 интерфейсы <code class="demo-inline-code">CanActivate</code>,
+      <code class="demo-inline-code">CanDeactivate</code> и <code class="demo-inline-code">Resolve</code>
+      уже удалены — остались только функции.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section heading="withComponentInputBinding()" icon="input">
+    <app-code-block [code]="inputBindingSnippet" caption="app.config.ts + компонент маршрута" />
+    <span hint>
+      Опция включается один раз в <code class="demo-inline-code">provideRouter()</code>
+      и работает для всех маршрутов приложения.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Два класса в DI и три подписки в компоненте."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>
+      Переходы между страницами этого приложения уже анимируются:
+      в <code class="demo-inline-code">provideRouter()</code> включён
+      <code class="demo-inline-code">withViewTransitions()</code>.
+    </span>
+  </app-demo-section>
+</app-demo-page>

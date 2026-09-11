@@ -1,0 +1,132 @@
+<app-demo-page
+  heading="Формы: типизация, поток событий и MatTimepicker"
+  since="v18"
+  summary="Реактивные формы не переписывали заново, но вокруг них изменилось многое:
+           NonNullableFormBuilder убрал null из типов, поток control.events объединил
+           valueChanges, statusChanges, touched и pristine, а toSignal() связал форму с сигналами."
+>
+  <app-demo-section
+    heading="Форма создания поста"
+    icon="edit_note"
+    description="Отправляется реальным POST-запросом на jsonplaceholder. Все поля типизированы,
+                 состояние кнопки вычисляется из сигнала статуса."
+  >
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Заголовок</mat-label>
+        <input matInput formControlName="title" placeholder="Минимум 5 символов" />
+        @if (titleControl.hasError('required') && titleControl.touched) {
+          <mat-error>Заголовок обязателен</mat-error>
+        }
+        @if (titleControl.hasError('minlength')) {
+          <mat-error>Нужно минимум 5 символов</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Текст</mat-label>
+        <textarea matInput rows="3" formControlName="body"></textarea>
+        <mat-hint align="end">{{ value().body?.length ?? 0 }} / 300</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Автор</mat-label>
+        <mat-select formControlName="userId">
+          @for (id of userIds; track id) {
+            <mat-option [value]="id">Пользователь {{ id }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Время публикации</mat-label>
+        <input matInput [matTimepicker]="picker" formControlName="publishAt" />
+        <mat-timepicker-toggle matIconSuffix [for]="picker" />
+        <mat-timepicker #picker />
+        <mat-hint>MatTimepicker — новый компонент Material 20</mat-hint>
+      </mat-form-field>
+
+      <div class="full">
+        <label>Приоритет: {{ value().priority }}</label>
+        <mat-slider min="1" max="5" step="1" discrete>
+          <input matSliderThumb formControlName="priority" />
+        </mat-slider>
+      </div>
+
+      <mat-checkbox class="full" formControlName="agreed">
+        Согласен с правилами публикации
+      </mat-checkbox>
+
+      <div class="full demo-row">
+        <button matButton="filled" type="submit" [disabled]="!canSubmit() || sending()">
+          <mat-icon>send</mat-icon>
+          Опубликовать
+        </button>
+        <button matButton="outlined" type="button" (click)="reset()">Сбросить</button>
+
+        <div class="demo-stat">
+          <span class="label">Статус формы</span>
+          <span class="value" style="font: var(--mat-sys-title-medium)">{{ status() }}</span>
+        </div>
+      </div>
+    </form>
+
+    @if (created(); as post) {
+      <div class="demo-note">
+        Сервер ответил: создан пост с id <strong>{{ post.id }}</strong> и заголовком
+        «{{ post.title }}». jsonplaceholder данные не сохраняет — ответ имитируется.
+      </div>
+    }
+
+    <p hint>
+      Мутации (POST, PUT, DELETE) по-прежнему выполняются обычным
+      <code class="demo-inline-code">HttpClient</code>:
+      <code class="demo-inline-code">httpResource()</code> предназначен только для чтения.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Единый поток control.events"
+    icon="stream"
+    description="Печатайте в полях, ставьте и снимайте фокус — здесь видно последнее событие формы."
+  >
+    <div class="demo-row">
+      <div class="demo-stat accent">
+        <span class="label">Последнее событие</span>
+        <span class="value" style="font: var(--mat-sys-title-medium)">{{ formEvents() }}</span>
+      </div>
+    </div>
+
+    <app-code-block [code]="eventsSnippet" caption="control.events + toSignal" />
+
+    <p hint>
+      До v18 у <code class="demo-inline-code">touched</code> и
+      <code class="demo-inline-code">pristine</code> не было Observable вовсе — их приходилось
+      опрашивать в каждом цикле change detection.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="Типизированные формы" icon="rule">
+    <app-code-block [code]="typedFormsSnippet" caption="NonNullableFormBuilder" />
+    <span hint>
+      Сами типизированные формы появились в Angular 14, но именно
+      <code class="demo-inline-code">NonNullableFormBuilder</code> сделал их удобными в повседневном коде.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Два потока, ручной опрос touched и markForCheck."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>
+      Следующий шаг, над которым работает команда Angular, — Signal Forms:
+      форма как дерево сигналов, без FormGroup и FormControl.
+    </span>
+  </app-demo-section>
+</app-demo-page>

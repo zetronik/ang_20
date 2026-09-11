@@ -1,0 +1,125 @@
+<app-demo-page
+  heading="Сигнальные запросы: viewChild, viewChildren, contentChild"
+  since="v17.2"
+  summary="Запросы к DOM и дочерним компонентам стали сигналами. Пропали ngAfterViewInit,
+           флаг static, QueryList и подписка на changes — вместе с целым классом ошибок
+           ExpressionChangedAfterItHasBeenCheckedError."
+>
+  <app-demo-section
+    heading="viewChild() и viewChild.required()"
+    icon="my_location"
+    description="Кнопки обращаются к элементам шаблона напрямую через сигналы,
+                 без единого lifecycle-хука."
+  >
+    <div class="demo-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Поле для фокуса</mat-label>
+        <input matInput #searchBox placeholder="Нажмите кнопку справа" />
+      </mat-form-field>
+
+      <button matButton="filled" type="button" (click)="focusSearch()">
+        <mat-icon>center_focus_strong</mat-icon>
+        Сфокусировать
+      </button>
+
+      <div #counterBox class="demo-stat accent">
+        <span class="label">viewChild.required</span>
+        <span class="value">{{ boxes().length }}</span>
+      </div>
+
+      <button matButton="outlined" type="button" (click)="highlightCounter()">
+        Анимировать счётчик
+      </button>
+    </div>
+
+    <app-code-block [code]="viewChildSnippet" caption="queries-page.ts" />
+
+    <p hint>
+      Обычный <code class="demo-inline-code">viewChild()</code> возвращает
+      <code class="demo-inline-code">T | undefined</code>, поэтому TypeScript сам заставит
+      написать <code class="demo-inline-code">?.</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="viewChildren(): список, который следит за @for и @if"
+    icon="grid_view"
+    description="Добавляйте и убирайте квадраты — сигнал обновляется сам, без подписки на changes."
+  >
+    <div class="demo-row">
+      <button matIconButton type="button" (click)="removeBox()"><mat-icon>remove</mat-icon></button>
+      <div class="demo-stat">
+        <span class="label">Квадратов</span>
+        <span class="value">{{ boxCount() }}</span>
+      </div>
+      <button matIconButton type="button" (click)="addBox()"><mat-icon>add</mat-icon></button>
+
+      <mat-slide-toggle [checked]="showExtra()" (change)="showExtra.set($event.checked)">
+        Показать дополнительный элемент
+      </mat-slide-toggle>
+    </div>
+
+    <div class="boxes">
+      @for (item of boxList(); track item) {
+        <div #box class="box">{{ item }}</div>
+      }
+      @if (showExtra()) {
+        <div #box class="box">+</div>
+      }
+    </div>
+
+    <app-rating-widget label="Виджет внутри view" max="5" />
+
+    <div class="demo-log">
+      @for (entry of queryLog(); track $index) {
+        <div>{{ entry }}</div>
+      }
+    </div>
+
+    <p hint>
+      Элемент внутри <code class="demo-inline-code">&#64;if</code> попадает в результат запроса
+      ровно тогда, когда он отрисован — в Angular 16 для этого нужна была подписка на
+      <code class="demo-inline-code">QueryList.changes</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="contentChildren(): работа со спроецированным контентом"
+    icon="dashboard_customize"
+    description="Группа вкладок находит свои TabItem через contentChildren() и сама переключает активную."
+  >
+    <app-tab-group>
+      <app-tab-item label="Сигналы">
+        Сигналы заменили BehaviorSubject в большинстве сценариев управления состоянием компонента.
+      </app-tab-item>
+      <app-tab-item label="Шаблоны">
+        Встроенный control flow компилируется в инструкции рантайма и работает быстрее структурных директив.
+      </app-tab-item>
+      <app-tab-item label="Сборка">
+        esbuild и Vite ускорили и production-сборку, и dev-server с поддержкой HMR.
+      </app-tab-item>
+    </app-tab-group>
+
+    <app-code-block [code]="contentChildrenSnippet" caption="tab-group.ts" />
+
+    <p hint>
+      У запросов остались привычные опции <code class="demo-inline-code">descendants</code>
+      и <code class="demo-inline-code">read</code> — изменился только способ чтения результата.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Декораторы, QueryList, ngAfterViewInit и ручной detectChanges."
+  >
+    <app-code-block [code]="beforeSnippet" caption="Angular 16" />
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>
+      Автоматическая миграция: <code class="demo-inline-code">ng generate @angular/core:signal-queries-migration</code>
+    </span>
+  </app-demo-section>
+</app-demo-page>

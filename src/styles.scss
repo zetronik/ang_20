@@ -1,0 +1,152 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* ---------------------------------------------------------------------------
+   Глобальные утилитарные классы для демо-страниц.
+   Вынесены сюда, чтобы каждая страница не дублировала одни и те же стили.
+   Все цвета берутся из системных переменных Material 3 (--mat-sys-*),
+   поэтому светлая и тёмная темы работают без единой строчки JS.
+--------------------------------------------------------------------------- */
+
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.demo-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.demo-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-high);
+  border: 1px solid var(--mat-sys-outline-variant);
+  min-width: 120px;
+}
+
+.demo-stat .label {
+  font: var(--mat-sys-label-small);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.demo-stat .value {
+  font: var(--mat-sys-headline-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.demo-stat.accent {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.demo-stat.accent .label {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.demo-log {
+  margin: 0;
+  padding: 12px 16px;
+  max-height: 220px;
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-highest);
+  border: 1px solid var(--mat-sys-outline-variant);
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.demo-note {
+  padding: 12px 16px;
+  border-left: 4px solid var(--mat-sys-primary);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--mat-sys-primary-container) 40%, transparent);
+  font: var(--mat-sys-body-medium);
+}
+
+.demo-note.warn {
+  border-left-color: var(--mat-sys-error);
+  background: color-mix(in srgb, var(--mat-sys-error-container) 40%, transparent);
+}
+
+.demo-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: var(--mat-sys-body-medium);
+}
+
+.demo-inline-code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--mat-sys-surface-container-highest);
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.demo-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.demo-spacer {
+  flex: 1 1 auto;
+}

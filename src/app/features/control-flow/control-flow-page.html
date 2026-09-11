@@ -1,0 +1,137 @@
+<app-demo-page
+  heading="Встроенный control flow: @if, @for, @switch, @let"
+  since="v17"
+  summary="Самое заметное изменение в шаблонах. Условия и циклы стали частью синтаксиса, а не
+           директивами: их не нужно импортировать, они быстрее работают и надёжнее типизированы.
+           В v20 *ngIf, *ngFor и *ngSwitch официально помечены устаревшими."
+>
+  <app-demo-section
+    heading="@if / @else if / @else"
+    icon="fork_right"
+    description="Состояние загрузки списка пользователей описано одной конструкцией без ng-template."
+  >
+    @if (users.isLoading()) {
+      <p>Загружаем пользователей…</p>
+    } @else if (users.error()) {
+      <p>Не удалось загрузить данные.</p>
+    } @else if (visibleUsers().length > 0) {
+      <p>Готово: найдено {{ visibleUsers().length }} пользователей.</p>
+    } @else {
+      <p>По фильтру ничего не найдено.</p>
+    }
+
+    <app-code-block [code]="ifSnippet" lang="html" caption="@if с алиасом as" />
+
+    <p hint>
+      Синтаксис <code class="demo-inline-code">&#64;if (expr; as alias)</code> сохраняет
+      результат выражения — прямая замена <code class="demo-inline-code">*ngIf="x as y"</code>.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="@for с track, $index и @empty"
+    icon="format_list_numbered"
+    description="Фильтруйте список — блок @empty покажется автоматически, когда совпадений нет."
+  >
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Фильтр по имени или компании</mat-label>
+      <input matInput type="search" [value]="filter()" (input)="onFilter($event)" />
+      <mat-icon matSuffix>filter_alt</mat-icon>
+    </mat-form-field>
+
+    <!-- @let: локальная переменная шаблона (v18.1) -->
+    @let total = visibleUsers().length;
+
+    <div class="demo-col">
+      @for (user of visibleUsers(); track user.id; let index = $index) {
+        <div class="user-row" [class.odd]="$odd">
+          <span>{{ index + 1 }}</span>
+          <strong>{{ user.name }}</strong>
+          <span>{{ user.company.name }}</span>
+          <span class="badge">
+            @if ($first) {
+              первый
+            } @else if ($last) {
+              последний из {{ $count }}
+            } @else {
+              {{ $even ? 'чётный' : 'нечётный' }}
+            }
+          </span>
+        </div>
+      } @empty {
+        <div class="demo-note warn">Совпадений нет — отрисовался блок &#64;empty.</div>
+      }
+    </div>
+
+    <p>Всего в выборке (через &#64;let): {{ total }}</p>
+
+    <app-code-block [code]="forSnippet" lang="html" caption="@for со всеми контекстными переменными" />
+
+    <p hint>
+      <code class="demo-inline-code">track</code> — обязательное выражение. Компилятор не даст
+      забыть про идентификацию элементов, из-за которой в v16 списки перерисовывались целиком.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="@switch"
+    icon="alt_route"
+    description="Строгое сравнение (===) и проверка типов: опечатка в @case станет ошибкой сборки."
+  >
+    <mat-button-toggle-group [value]="state()" (change)="state.set($event.value)">
+      @for (item of states; track item) {
+        <mat-button-toggle [value]="item">{{ item }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+
+    <div class="demo-note">
+      @switch (state()) {
+        @case ('idle') {
+          <span>Ожидание: запрос ещё не отправлялся.</span>
+        }
+        @case ('loading') {
+          <span>Загрузка данных…</span>
+        }
+        @case ('ready') {
+          <span>Данные получены и отрисованы.</span>
+        }
+        @default {
+          <span>Произошла ошибка — показываем экран с повтором.</span>
+        }
+      }
+    </div>
+
+    <app-code-block [code]="switchSnippet" lang="html" caption="@switch" />
+
+    <p hint>
+      В отличие от <code class="demo-inline-code">*ngSwitchCase</code>, здесь не нужен
+      контейнер-обёртка и не теряется типизация.
+    </p>
+  </app-demo-section>
+
+  <app-demo-section heading="@let — переменные в шаблоне" icon="data_object">
+    <app-code-block [code]="letSnippet" lang="html" caption="@let" />
+    <span hint>
+      Область видимости <code class="demo-inline-code">&#64;let</code> — текущий блок шаблона
+      и вложенные в него. Переприсваивание запрещено.
+    </span>
+  </app-demo-section>
+
+  <app-demo-section
+    heading="Как это писалось в Angular 16"
+    icon="history"
+    description="Те же три экрана на структурных директивах."
+  >
+    <app-code-block [code]="beforeSnippet" lang="html" caption="Angular 16" />
+
+    <div class="demo-note">
+      Автоматическая миграция всего проекта:
+      <code class="demo-inline-code">ng generate @angular/core:control-flow</code>
+    </div>
+  </app-demo-section>
+
+  <app-demo-section heading="Сводка отличий" icon="difference">
+    <app-compare-table [rows]="comparison" />
+    <span hint>Подробнее: angular.dev/guide/templates/control-flow</span>
+  </app-demo-section>
+</app-demo-page>
